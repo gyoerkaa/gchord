@@ -1,14 +1,22 @@
+/* 
+    Chord graph library
+    Description: Creates chord graphs from google spreadsheets or (javascript) arrays
+    License: GPL v2
+    Author: Attila Gyoerkoes
+    Author URL: http://www.github.com/gyoerkaa
+*/ 
 var gchord = {};
 
 gchord.svgNS   = 'http://www.w3.org/2000/svg';
 gchord.xlinkNS = 'http://www.w3.org/1999/xlink';
+
 // Constructor
 gchord.ChordDiagram = function(container) {
     this.containerElement = container;
     this.dataColumns = {targetID: 0,                    
-                       weight: 1,
-                       sourceID: 2,
-                       positionHint: 3};
+                        weight: 1,
+                        sourceID: 2,
+                        positionHint: 3};
     
     // Layout options
     this.canvasWidth  = 500;
@@ -73,7 +81,12 @@ gchord.ChordDiagram = function(container) {
 }
 
 
-// Utility function to escape HTML special characters
+/**
+ * Utility function to escape special characters
+ *
+ * @param {string} text String to escape
+ * @return {string} Escaped string
+ */
 gchord.ChordDiagram.prototype.escapeHtml = function(text) {
     if (text == null) {
         return '';
@@ -81,8 +94,13 @@ gchord.ChordDiagram.prototype.escapeHtml = function(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
  
- 
-// Utility function to check the sanity of input data
+
+/**
+ * Utility function to check the sanity of input data
+ *
+ * @param {object} data Data
+ * @return {boolean} True, if checks are passed
+ */  
 gchord.ChordDiagram.prototype.checkInputSanity = function(data) {
     
     if (data.getNumberOfRows() < 4) {
@@ -103,7 +121,12 @@ gchord.ChordDiagram.prototype.checkInputSanity = function(data) {
 }
 
 
-// ...
+/**
+ * Set seome options
+ * TODO: create documentation of possible options
+ *
+ * @param {object} options A set of options as object
+ */
 gchord.ChordDiagram.prototype.setOptions = function(options) {
     if (options.hasOwnProperty('canvasSize') && (typeof options.canvasSize === 'number') ) {
         this.canvasWidth  = options.canvasSize;
@@ -174,29 +197,76 @@ gchord.ChordDiagram.prototype.createDefinitions = function() {
 }
 
 
+/**
+ * Creates a new script element, creating our scripts for mouseover events
+ *
+ *
+ * @return {object} The new script object
+ */
+gchord.ChordDiagram.prototype.createScripts = function() {
+    var scriptElem = document.createElementNS(gchord.svgNS, 'script');
+    scriptElem.setAttributeNS(null, 'type', 'text/ecmascript');
+
+    // TODO: Move this to separate file
+    var diagramScript = '// Write scripts here';
+    
+    var newCDATA = document.createTextNode(diagramScript);
+    scriptElem.appendChild(newCDATA); 
+    
+    return scriptElem;
+}
+
+
+/**
+ * Creates a new text element horizontal to the defining circle of the graph.
+ * Coordinates are defined by an angle (polar coordinates with constant radius, 
+ * 0° = 3 o'clock, angles are in radians).
+ * The text element will be centered between the two angles. If there is not 
+ * enough space to fit the text, it will be written vertically instead.
+ *  
+ *
+ * @param {string} text         Text
+ * @param {string} elementId    Unique ID of the text element
+ * @param {number} angle        Position of the text element (in rad)
+ * @param {number} radius       Position of the text element 
+ * @param {number} size         Text size 
+ * @param {number} color        Text color
+ * @return {object} The new text object.
+ */
 gchord.ChordDiagram.prototype.createTextHori = function(text,
                                                         elementId, 
-                                                        angle,
+                                                        angleStart,
+                                                        angleEnd,
                                                         size,
                                                         color) {
-    var txtElem = document.createElementNS(gchord.svgNS, 'text');
-    txtElem.setAttributeNS(null, 'x', this.graphCenter.x);
-    txtElem.setAttributeNS(null, 'y', this.graphCenter.y);
-    txtElem.setAttributeNS(null, 'fill', color);
-    txtElem.setAttributeNS(null, 'id', elementId);
-    txtElem.setAttributeNS(null, 'font-size', size);
-    txtElem.setAttributeNS(null, 'text-anchor', 'middle');
+    var angle = (angleEnd+angleStart)/2;
     
-    var txtPath = document.createElementNS(gchord.svgNS, 'textPath');
+    // Check if the text would fit in between the angles.
+    // This depends on font type, so we have to make a guess.
+    var arcLength = Math.abs(angleEnd-angleStart) * (this.graphRadius+this.targetArcWidth*0.4);
+    var txtElem;
+    //if (text.length*(this.targetTxtSize/10)) < arcLength) {
+    if (true) {   
+        txtElem = document.createElementNS(gchord.svgNS, 'text');
+        txtElem.setAttributeNS(null, 'x', this.graphCenter.x);
+        txtElem.setAttributeNS(null, 'y', this.graphCenter.y);
+        txtElem.setAttributeNS(null, 'fill', color);
+        txtElem.setAttributeNS(null, 'id', elementId);
+        txtElem.setAttributeNS(null, 'font-size', size);
+        txtElem.setAttributeNS(null, 'text-anchor', 'middle');
     
-    txtPath.setAttributeNS(gchord.xlinkNS, 'href', '#'+this.horiTextHelperID);
-    txtPath.setAttributeNS(null, 'startOffset', angle*(this.graphRadius+this.targetArcWidth*0.4));
+        var txtPath = document.createElementNS(gchord.svgNS, 'textPath');
     
-    var txtNode = document.createTextNode(text);    
+        txtPath.setAttributeNS(gchord.xlinkNS, 'href', '#'+this.horiTextHelperID);
+        txtPath.setAttributeNS(null, 'startOffset', angle*(this.graphRadius+this.targetArcWidth*0.4));
+        
+        var txtNode = document.createTextNode(text);    
     
-    txtElem.appendChild(txtPath);
-    txtPath.appendChild(txtNode);
+        txtElem.appendChild(txtPath);
+        txtPath.appendChild(txtNode);
+    } else {
     
+    }
     return txtElem;
 }
 
@@ -227,7 +297,7 @@ gchord.ChordDiagram.prototype.createTextVert = function(text,
     txtElem.setAttributeNS(null, 'font-size', size);
     
     // Sometimes it's radians, sometimes degrees 
-    // ... you people are on my list now !  
+    // ... gonna put those people on my list.
     var modifiedAngle = angle*180/Math.PI; 
       
     var x = this.graphCenter.x + radius;
@@ -492,12 +562,13 @@ gchord.ChordDiagram.prototype.fromGoogleDataTable = function(data, options) {
         this.totalWeight += connectionWeight;        
     }
        
-    // Normalize Weights ... or not
+    // Normalize Weights ... doing it later on demand
 }
 
 
 gchord.ChordDiagram.prototype.fromArray = function(data, options) {
-
+    // TODO: Ditch googles DataTable completely, convert them to an array and use this method instead
+    //       as we don't use any of the built-in functions anyway
 }
 
 
@@ -523,7 +594,10 @@ gchord.ChordDiagram.prototype.draw = function() {
     svgDocument.setAttributeNS(null, 'width', this.canvasWidth);
 	svgDocument.setAttributeNS(null, 'height', this.canvasHeight);
     
-    svgDocument.appendChild(this.createDefinitions());    
+    svgDocument.appendChild(this.createDefinitions()); 
+    
+    // TODO: Add mouseover effects/scripts (reduce opacity for other elements than the highlighted)
+    svgDocument.appendChild(this.createScripts());
     
     var useElement = document.createElementNS(gchord.svgNS, 'use');
     useElement.setAttribute('xlink:href', '#'+this.horiTextHelperID);
@@ -564,30 +638,34 @@ gchord.ChordDiagram.prototype.draw = function() {
                                    this.targetArcWidth);
         svgDocument.appendChild(targetArc);
         
-        // TODO: Try to fit the text onto the target bar. Preferably horizontally,
-        //       but put it vertically if there is a lack of space.
-        //       Ultimately it is the users responsibility to choose names of 
-        //       appropriate length                                     
+        // Try to fit the text onto the target bar. Preferably horizontally,
+        // but put it vertically if there is a lack of space.
+        // Ultimately it is the users responsibility to choose names of 
+        // appropriate length                                     
         targetTxt = this.createTextHori(this.targetList[target].name, 
                                         this.targetList[target].id + '_txt', 
-                                        (arcStart+arcEnd)/2,
+                                        arcStart,
+                                        arcEnd,
                                         this.targetTxtSize, 
-                                        this.targetTxtColor);                                
+                                        this.targetTxtColor);
         svgDocument.appendChild(targetTxt);
         
-        // Create source-target connections
-        
+        // Create source-target connections 
         if (this.flagUsePositionHint) {
             var bezier2Start;
             var bezier2End;
             var bezier2Width;
-            var normalizedWeight;            
+            var normalizedWeight;
+            var normalizedPos;
             for (var i=0; i < this.targetList[target].connections.length; i++) {
                 connection = this.targetList[target].connections[i];
-                bezier2Start = this.sourceList[connection.sourceID].svgPos;               
+                bezier2Start = this.sourceList[connection.sourceID].svgPos;
+                
                 normalizedWeight = (connection.weight-this.weight.min) / (this.weight.max-this.weight.min);
                 bezier2Width = this.connectWidth.min + normalizedWeight * (this.connectWidth.max-this.connectWidth.min);
-                bezier2End   = arcStart + normalizedWeight * (arcEnd-arcStart);
+                
+                normalizedPos = (connection.positionHint-this.positionHint.min) / (this.positionHint.max-this.positionHint.min); 
+                bezier2End   = arcStart + normalizedPos * (arcEnd-arcStart);
                 
                 bezier2 = this.createBezier2(connection.sourceID + '_' + this.targetList[target].id + '_' + i.toString(), 
                                              bezier2Start, 
@@ -599,8 +677,10 @@ gchord.ChordDiagram.prototype.draw = function() {
             }
         }
         else {
-            
+            // TODO: Use some other kind of sorting to determine position, if no date is available
+            //      (or draw graph differently)
         }
+   
     }
 
 }
