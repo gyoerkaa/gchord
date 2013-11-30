@@ -53,8 +53,8 @@
                 
                 var options = {canvasSize: 800, 
                                graphRadius: 300,
-                               targetTextColor: '#EEEEEE',  // optional (uses #FFFFFF/White by default)
-                               sourceTextColor: '#000000',  // optional (uses #000000/Black by default)
+                               targetTextColor: '#EEEEEE',  // optional (uses #FFFFFF by default)
+                               sourceTextColor: '#000000',  // optional (uses #000000 by default)
                                dataColumns: dataCols,       // optional (uses columns 1-4 by default)   
                                colorPalette: myPalette};    // optional (uses built-in palette by default)     
                                
@@ -64,8 +64,10 @@
 
             }
             
-            // Function to save the generated svg. 
-            // May not work with all browsers and the generated xml
+            // Function to save the generated svg without a server.
+            // btoa() is a non-standard function and only available
+            // under firefoxe and chrome.
+            // The generated xml
             // will be ugly/unformatted
             function show_svg_code()
             {

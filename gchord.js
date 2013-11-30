@@ -22,37 +22,40 @@ gchord.ChordDiagram = function(container) {
     this.canvasWidth  = 500;
     this.canvasHeight = 500;
     this.graphRadius  = 150;
-    this.graphCenter  = {x:250, y:250};
+    this.graphCenter  = {x:250, y:250};  
     this.targetTxtSize  = 12;
-    this.targetArcWidth = 60;
-    this.sourceTxtSize = 10;
     this.targetTxtColor = '#FFFFFF';
+    this.targetArcWidth = 60;
+    // Angle (polar coords) at which to start and end the drawing of target arcs
+    this.targetArcDisplay = {start: Math.PI*1.15, end: Math.PI*1.85};
+    this.targetArcLength = {min: this.targetTxtSize/(2*(this.targetArcDisplay.end - this.targetArcDisplay.start)*this.graphRadius),
+                            max: (this.targetArcDisplay.end - this.targetArcDisplay.start)};
+    this.targetArcLength = {min: 0.5,
+                            max: 1};   
+    this.sourceTxtSize = 10;   
     this.sourceTxtColor = '#000000';
-    // Angle at which to start and and the drawing of targets
-    this.targetDisplay = {start: Math.PI*1.15, end: Math.PI*1.85};
-    // Angle at which to start and and the drawing of sources
+    // Angle (polar coords) at which to start and end the drawing of sources
     this.sourceDisplay = {start: Math.PI*-0.1, end: Math.PI*1.1};
     // Stroke width for target-source connections
     // Max stroke width is used for max weight
     this.connectWidth = {min: 1, max: 5};
     this.horiTextHelperID = 'horitexthelper';
-    this.minTargetArcLength = this.targetTxtSize;
-    
+   
     // We can use an oject to emulate a simple set, 
     // as no removals are necessary
     this.targetList = new Object();
     this.sourceList = new Object();
     
     // Needed for normalization
-    this.totalWeight = 0;
     this.numTargets = 0;
     this.numSources = 0;
-    this.positionHint = {min: Number.MAX_VALUE, max: Number.MIN_VALUE};
-    this.weight = {min: Number.MAX_VALUE, max: Number.MIN_VALUE};
+    this.positionHint      = {min: Number.MAX_VALUE, max: Number.MIN_VALUE};
+    this.targetWeights     = {min: Number.MAX_VALUE, max: Number.MIN_VALUE, total: 0};
+    this.connectionWeights = {min: Number.MAX_VALUE, max: Number.MIN_VALUE, total: 0};
     this.flagUsePositionHint = true;
     
     /*                  
-    // RGB Color palette
+    // Alternative RGB Color palette
     this.colorPalette = [ [ 63,   0, 255], // Indigo     (B)
                           [  0, 255,  63], // Malachite  (G)
                           [255,  63,   0], // Vermillion (R)
@@ -154,6 +157,10 @@ gchord.ChordDiagram.prototype.setOptions = function(options) {
         this.sourceTxtColor = options.sourceTextColor;
     } 
     
+    if (options.hasOwnProperty('targetArcWidth') && (typeof options.targetTextColor === 'number') ) {
+        this.targetArcWidth = options.targetArcWidth;
+    } 
+    
     if (options.hasOwnProperty('dataColumns')) {           
         if (options.dataColumns.hasOwnProperty('targetID')) {
             this.dataColumns.targetID = options.dataColumns.targetID; 
@@ -167,7 +174,7 @@ gchord.ChordDiagram.prototype.setOptions = function(options) {
         } 
         if (options.dataColumns.hasOwnProperty('positionHint')) {
             this.dataColumns.positionHint = options.dataColumns.positionHint; 
-        }         
+        }
     }
     
     if (options.hasOwnProperty('colorPalette')) {
@@ -179,7 +186,7 @@ gchord.ChordDiagram.prototype.setOptions = function(options) {
 
 
 /**
- * Creates a new defs element, which contains a few (invisible) helper 
+ * Creates a new definitions element, which contains a few (invisible) helper 
  * objects.
  *
  * @return {object} The new defs object
@@ -198,7 +205,7 @@ gchord.ChordDiagram.prototype.createDefinitions = function() {
 
 
 /**
- * Creates a new script element, creating our scripts for mouseover events
+ * Creates a new script element, containing scripts for mouseover events
  *
  *
  * @return {object} The new script object
@@ -207,11 +214,14 @@ gchord.ChordDiagram.prototype.createScripts = function() {
     var scriptElem = document.createElementNS(gchord.svgNS, 'script');
     scriptElem.setAttributeNS(null, 'type', 'text/ecmascript');
 
-    // TODO: Move this to separate file
-    var diagramScript = '// Write scripts here';
-    
-    var newCDATA = document.createTextNode(diagramScript);
-    scriptElem.appendChild(newCDATA); 
+    // TODO: Move this script to separate file   
+    var newCDATA;
+    newCDATA = document.createTextNode('<![CDATA[');
+    scriptElem.appendChild(newCDATA);
+    newCDATA = document.createTextNode('// Write scripts here');
+    scriptElem.appendChild(newCDATA);   
+    newCDATA = document.createTextNode(']]>');
+    scriptElem.appendChild(newCDATA);
     
     return scriptElem;
 }
@@ -239,33 +249,38 @@ gchord.ChordDiagram.prototype.createTextHori = function(text,
                                                         angleEnd,
                                                         size,
                                                         color) {
-    var angle = (angleEnd+angleStart)/2;
-    
+    //TODO: Ditch a few parameters and use global styles instead to reduce document size                                                    
+                                                        
     // Check if the text would fit in between the angles.
     // This depends on font type, so we have to make a guess.
     var arcLength = Math.abs(angleEnd-angleStart) * (this.graphRadius+this.targetArcWidth*0.4);
     var txtElem;
-    //if (text.length*(this.targetTxtSize/10)) < arcLength) {
-    if (true) {   
+    if ((text.length*(this.targetTxtSize*0.9)) < arcLength) {   
         txtElem = document.createElementNS(gchord.svgNS, 'text');
         txtElem.setAttributeNS(null, 'x', this.graphCenter.x);
         txtElem.setAttributeNS(null, 'y', this.graphCenter.y);
         txtElem.setAttributeNS(null, 'fill', color);
         txtElem.setAttributeNS(null, 'id', elementId);
         txtElem.setAttributeNS(null, 'font-size', size);
+        txtElem.setAttributeNS(null, 'font-variant', 'small-caps');
         txtElem.setAttributeNS(null, 'text-anchor', 'middle');
     
         var txtPath = document.createElementNS(gchord.svgNS, 'textPath');
     
         txtPath.setAttributeNS(gchord.xlinkNS, 'href', '#'+this.horiTextHelperID);
-        txtPath.setAttributeNS(null, 'startOffset', angle*(this.graphRadius+this.targetArcWidth*0.4));
+        txtPath.setAttributeNS(null, 'startOffset', ((angleEnd+angleStart)/2)*(this.graphRadius+this.targetArcWidth*0.4));
         
         var txtNode = document.createTextNode(text);    
     
         txtElem.appendChild(txtPath);
         txtPath.appendChild(txtNode);
     } else {
-    
+        txtElem = this.createTextVert(text,
+                                      elementId, 
+                                      angleStart+(angleEnd-angleStart)/2,
+                                      this.graphRadius+this.targetArcWidth*0.2,
+                                      size,
+                                      color);
     }
     return txtElem;
 }
@@ -291,6 +306,8 @@ gchord.ChordDiagram.prototype.createTextVert = function(text,
                                                         radius,
                                                         size,
                                                         color) {
+    //TODO: Ditch a few parameters and use global styles instead to reduce document size  
+    
     var txtElem = document.createElementNS(gchord.svgNS, 'text');
     txtElem.setAttributeNS(null, 'fill', color);
     txtElem.setAttributeNS(null, 'id', elementId);
@@ -327,7 +344,7 @@ gchord.ChordDiagram.prototype.createTextVert = function(text,
     var txtNode = document.createTextNode(text);
     txtElem.appendChild(txtNode);
     
-    return txtElem;                   
+    return txtElem;
 }
 
 
@@ -430,7 +447,7 @@ gchord.ChordDiagram.prototype.createBezier2 = function(elementId,
                                          ctrl.y + ' ' +
                                          end.x + ',' +
                                          end.y);
-                                 
+    
     return path;
 }
 
@@ -445,11 +462,11 @@ gchord.ChordDiagram.prototype.getColor = function() {
         
     var r;
     var g;
-    var b;   
-    if (this.colorID < this.colorPalette.length) {       
+    var b;
+    if (this.colorID < this.colorPalette.length) {
         r = parseInt(this.colorPalette[this.colorID][0]);
         g = parseInt(this.colorPalette[this.colorID][1]);
-        b = parseInt(this.colorPalette[this.colorID][2]);   
+        b = parseInt(this.colorPalette[this.colorID][2]);
         this.colorID += 1;
         return 'rgb('+r+','+g+','+b+')';
     } else {
@@ -496,10 +513,10 @@ gchord.ChordDiagram.prototype.fromGoogleDataTable = function(data, options) {
     
     this.setOptions(options);
     
-    var targetID         = '';
-    var connectionWeight = 0;
-    var sourceID         = '';
-    var posHint          = ''; // may not be present
+    var targetID;
+    var connectionWeight;
+    var sourceID;
+    var posHint = ''; // may not be present
     var connection;   
     // Get data from spreadsheet
     for (var row = 0; row < data.getNumberOfRows(); row++) {
@@ -545,8 +562,8 @@ gchord.ChordDiagram.prototype.fromGoogleDataTable = function(data, options) {
                       positionHint: posHint};
         this.positionHint.min = Math.min(this.positionHint.min, posHint);
         this.positionHint.max = Math.max(this.positionHint.max, posHint);
-        this.weight.min = Math.min(this.weight.min, connectionWeight);
-        this.weight.max = Math.max(this.weight.max, connectionWeight); 
+        this.connectionWeights.min = Math.min(this.connectionWeights.min, connectionWeight);
+        this.connectionWeights.max = Math.max(this.connectionWeights.max, connectionWeight);
         this.targetList[targetID].connections.push(connection);
         this.targetList[targetID].totalWeight += connectionWeight; 
         
@@ -559,10 +576,16 @@ gchord.ChordDiagram.prototype.fromGoogleDataTable = function(data, options) {
             this.numSources++;
         }
         // Add source data        
-        this.totalWeight += connectionWeight;        
+        this.connectionWeights.total += connectionWeight;        
     }
-       
+    
+    for(var target in this.targetList) {
+        this.targetWeights.min = Math.min(this.targetWeights.min, this.targetList[target].totalWeight);
+        this.targetWeights.max = Math.max(this.targetWeights.max, this.targetList[target].totalWeight);
+    }
+    
     // Normalize Weights ... doing it later on demand
+    
 }
 
 
@@ -596,7 +619,10 @@ gchord.ChordDiagram.prototype.draw = function() {
     
     svgDocument.appendChild(this.createDefinitions()); 
     
-    // TODO: Add mouseover effects/scripts (reduce opacity for other elements than the highlighted)
+    // TODO: Create some styles to reduce svg size (text: font-family, font-sizes, color)
+    
+    // TODO: Add mouseover effects/scripts for better readability 
+    //       (reduce opacity for other elements than the highlighted)
     svgDocument.appendChild(this.createScripts());
     
     var useElement = document.createElementNS(gchord.svgNS, 'use');
@@ -606,7 +632,7 @@ gchord.ChordDiagram.prototype.draw = function() {
     // Create source names in the lower half and save coords
     var angle  = this.sourceDisplay.start;
     var offset = Math.abs(this.sourceDisplay.end-this.sourceDisplay.start)/(this.numSources-1);
-    var sourceTxt = {};
+    var sourceTxt;
     for(var source in this.sourceList) {
         sourceTxt = this.createTextVert(this.sourceList[source].name, 
                                         this.sourceList[source].id +'_txt', 
@@ -622,14 +648,17 @@ gchord.ChordDiagram.prototype.draw = function() {
     
     // Create target names in the upper half and save coords
     var arcStart = 0;
-    var arcEnd   = this.targetDisplay.start;
-    var targetTxt = {};
-    var targetArc = {};
-    var connection = {};
-    
+    var arcEnd   = this.targetArcDisplay.start;
+    var targetTxt;
+    var targetWeight;
+    var targetArc;
+    var connection;
+  
     for(var target in this.targetList) {
         arcStart = arcEnd;
-        arcEnd   = arcStart+(this.targetList[target].totalWeight/this.totalWeight)*(this.targetDisplay.end-this.targetDisplay.start);
+        targetWeight = this.targetList[target].totalWeight;
+
+        arcEnd   = arcStart+(targetWeight/this.connectionWeights.total)*(this.targetArcDisplay.end-this.targetArcDisplay.start);
         targetArc = this.createArc(this.targetList[target].id + '_arc', 
                                    arcStart, 
                                    arcEnd+0.001, // add a small value to avoid gaps on some renderers
@@ -661,11 +690,11 @@ gchord.ChordDiagram.prototype.draw = function() {
                 connection = this.targetList[target].connections[i];
                 bezier2Start = this.sourceList[connection.sourceID].svgPos;
                 
-                normalizedWeight = (connection.weight-this.weight.min) / (this.weight.max-this.weight.min);
+                normalizedWeight = (connection.weight-this.connectionWeights.min) / (this.connectionWeights.max-this.connectionWeights.min);
                 bezier2Width = this.connectWidth.min + normalizedWeight * (this.connectWidth.max-this.connectWidth.min);
                 
                 normalizedPos = (connection.positionHint-this.positionHint.min) / (this.positionHint.max-this.positionHint.min); 
-                bezier2End   = arcStart + normalizedPos * (arcEnd-arcStart);
+                bezier2End = arcStart + normalizedPos * (arcEnd-arcStart);
                 
                 bezier2 = this.createBezier2(connection.sourceID + '_' + this.targetList[target].id + '_' + i.toString(), 
                                              bezier2Start, 
@@ -682,5 +711,4 @@ gchord.ChordDiagram.prototype.draw = function() {
         }
    
     }
-
 }

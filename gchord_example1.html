@@ -23,7 +23,7 @@
                 data.addColumn('string', 'Date', 'date'); // RFC2822 or ISO 8601 (YYYY-MM-TT)
                 data.addRow(['Soup Station',        500, 'Onion',     '2011-01-21']);
                 data.addRow(['Pizza Palace',        250, 'Tomato',    '2011-02-21']);
-                data.addRow(['Chocolate Compound', 4000, 'Chocolate', '2011-03-21']);
+                data.addRow(['Chocolate Compound', 3000, 'Chocolate', '2011-03-21']);
                 data.addRow(['Pizza Palace',        250, 'Onion',     '2011-01-21']);
                 data.addRow(['Soup Station',        500, 'Tomato',    '2011-03-21']);
                 data.addRow(['Pizza Palace',       1000, 'Cheese',    '2011-04-21']);
@@ -33,13 +33,15 @@
                 data.addRow(['Chocolate Compound',  500, 'Almond',    '2011-09-21']);
                 data.addRow(['Chocolate Compound',  500, 'Hazelnut',  '2011-09-21']);
                 data.addRow(['Chocolate Compound',  200, 'Chili',     '2011-09-21']);
+                data.addRow(['Taco Tent',           250, 'Pepperoni', '2011-04-21']);
                 data.addRow(['Pizza Palace',        100, 'Chili',     '2011-10-21']);
-                data.addRow(['Soup Station',        300, 'Chili',     '2011-11-01']);
-                data.addRow(['Taco Tent',           500, 'Tomato',    '2011-11-19']);
+                data.addRow(['Soup Station',        500, 'Chili',     '2011-11-01']);
+                data.addRow(['Taco Tent',          1000, 'Tomato',    '2011-11-19']);
                 data.addRow(['Taco Tent',           500, 'Chili',     '2011-11-19']);
                 data.addRow(['Chocolate Compound', 1000, 'Chocolate', '2011-12-01']);
                 data.addRow(['Soup Station',        500, 'Tomato',    '2011-11-14']);
                 data.addRow(['Pizza Palace',       1000, 'Cheese',    '2011-12-21']);
+                data.addRow(['Taco Tent',           500, 'Chili',     '2011-01-16']);
                 
                 // Options for the graph
                 var options = {canvasSize: 580, 
@@ -53,7 +55,7 @@
                 chart.draw();
             }
                         
-            // Function to save the generated svg. 
+            // Function to save the generated svg without a server.
             // May not work with all browsers and the generated xml
             // will be ugly/unformatted
             function show_svg_code()
