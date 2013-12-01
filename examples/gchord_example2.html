@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <title>Gchord Example 2</title>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript" src="gchord.js"></script>
+        <script type="text/javascript">
+            google.load("visualization", "1");
+
+            // Set callback to run when API is loaded
+            google.setOnLoadCallback(drawVisualization);
+
+            // Called when the Chart API is loaded.
+            function drawVisualization() {
+                // Create and populate a data table.
+                               
+                // Get data from an example spreadsheet (key: 0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc)
+                // see https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&output=html
+                var query = new google.visualization.Query('https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&usp=drive_web#gid=0');
+                query.send(handleQueryResponse);
+   
+            }
+            
+            function handleQueryResponse(response) {
+                if (response.isError()) {
+                    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                    return;
+                }
+                
+                var data = response.getDataTable();
+                
+                // Specify a custom color palette
+                // (Should it run out of colors, a random color will be used)
+                var myPalette = [ [178,  34,  34], // dark red (?)
+                                  [240, 180,   0], // yellow
+                                  [  0,  72, 140], // blue
+                                  [ 30, 108,  11], // green
+                                  [179,   0,   0], // red 
+                                  [ 50,  50,  50], // gray 
+                                  [ 51,  38,   0],
+                                  [79,   49,  79],
+                                  [ 46, 139,  87],
+                                  [ 79,  79,  49],
+                                  [216,  64,   0], // orange
+                                ];  
+                
+                // Specify the colums from which to take the data from
+                var dataCols = {targetID: 0,     // targets taken from column 0  (optional, default=0)
+                                weight: 1,       // weights taken from column 1  (optional, default=1)
+                                sourceID: 3,     // sources taken from column 3  (optional, default=2)
+                                positionHint: 7, // sort by date in column 7 (optional, default=3)
+                                }; 
+                
+                var options = {canvasSize: 800, 
+                               graphRadius: 300,
+                               targetTextColor: '#EEEEEE',  // optional (uses #FFFFFF by default)
+                               sourceTextColor: '#000000',  // optional (uses #000000 by default)
+                               dataColumns: dataCols,       // optional (uses columns 1-4 by default)   
+                               colorPalette: myPalette};    // optional (uses built-in palette by default)     
+                               
+                var chart = new gchord.ChordDiagram(document.getElementById('chart2_div'));
+                chart.fromGoogleDataTable(data, options);
+                chart.draw();
+
+            }
+            
+            // Function to save the generated svg without a server.
+            // btoa() is a non-standard function and only available
+            // under firefoxe and chrome.
+            // The generated xml
+            // will be ugly/unformatted
+            function show_svg_code()
+            {
+                // Get the svg element
+                var chart_div = document.getElementById('chart2_div');
+                var svgDOM    = chart_div.getElementsByTagName('svg')[0];                               
+                
+                var svg_xml = (new XMLSerializer).serializeToString(svgDOM);
+                window.open('data:image/svg+xml;base64,'+btoa(svg_xml));
+            }
+            
+        </script>
+    </head>
+    <body>
+        <p>
+            Graph generated from a google dataTable object from a <a href="https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&output=html">google spreadsheet</a> (may a take moment, the table is large)
+        </p>
+        <div id="chart2_div">
+        </div>       
+        <div id="controls_div">
+            <button id="control_show_svg" value="" onclick="show_svg_code()">
+                Display SVG
+            </button>
+            (Uses non-standard methods, only Firefox & Chrome, may not work for very complex graphs)
+        </div>        
+    </body>   
+</html>
