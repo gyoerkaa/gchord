@@ -255,7 +255,7 @@ gchord.ChordDiagram.prototype.createTextHori = function(text,
     // This depends on font type, so we have to make a guess.
     var arcLength = Math.abs(angleEnd-angleStart) * (this.graphRadius+this.targetArcWidth*0.4);
     var txtElem;
-    if ((text.length*(this.targetTxtSize*0.9)) < arcLength) {   
+    if ((text.length*(this.targetTxtSize*0.5)) < arcLength) {   
         txtElem = document.createElementNS(gchord.svgNS, 'text');
         txtElem.setAttributeNS(null, 'x', this.graphCenter.x);
         txtElem.setAttributeNS(null, 'y', this.graphCenter.y);
