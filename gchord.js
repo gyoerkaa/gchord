@@ -25,7 +25,7 @@ gchord.ChordDiagram = function(container) {
     this.graphCenter  = {x:250, y:250};  
     this.targetTxtSize  = 12;
     this.targetTxtColor = '#FFFFFF';
-    this.targetArcWidth = 60;
+    this.targetArcWidth = 65;
     // Angle (polar coords) at which to start and end the drawing of target arcs
     this.targetArcDisplay = {start: Math.PI*1.15, end: Math.PI*1.85};
     this.targetArcLength = {min: this.targetTxtSize/(2*(this.targetArcDisplay.end - this.targetArcDisplay.start)*this.graphRadius),
