@@ -57,7 +57,7 @@
                                sourceTextColor: '#000000',  // optional (uses #000000 by default)
                                dataColumns: dataCols,       // optional (uses columns 1-4 by default)   
                                colorPalette: myPalette};    // optional (uses built-in palette by default)     
-                               
+                
                 var chart = new gchord.ChordDiagram();
                 chart.fromGoogleDataTable(data, options);
                 chart.draw(document.getElementById('chart2_div'));
@@ -91,10 +91,8 @@
         </div>       
         <div id="controls_div">
             <button id="control_show_svg" value="" onclick="show_svg_code()">
-                Display SVG
+                Show SVG only
             </button>
-            <br>
-            (Use Rightclick => Save Page As to save the graph to local filesystem)
         </div>        
     </body>   
 </html>

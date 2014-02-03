@@ -52,7 +52,7 @@
                 // Read data
                 chart.fromGoogleDataTable(data, options);
                 //actual draw call.
-                chart.draw(document.getElementById('chart1_div'));
+                chart.draw(document.getElementById('chart1a_div'));
             }
                         
             // Function to save the generated svg without a server.
@@ -61,7 +61,7 @@
             function show_svg_code()
             {
                 // Get the svg element
-                var chart_div = document.getElementById('chart1_div');
+                var chart_div = document.getElementById('chart1a_div');
                 var svgDOM    = chart_div.getElementsByTagName('svg')[0];
                 var svg_xml = (new XMLSerializer).serializeToString(svgDOM);
                 
@@ -76,14 +76,12 @@
         <p>
             Graph generated from a local google dataTable object.
         </p>
-        <div id="chart1_div">
+        <div id="chart1a_div">
         </div>       
         <div id="controls_div">
             <button id="control_show_svg" value="" onclick="show_svg_code()">
-                Display SVG
+                Show SVG only
             </button>
-            <br>
-            (Use Rightclick => Save Page As to save the graph to local filesystem)
         </div>        
     </body>   
 </html>

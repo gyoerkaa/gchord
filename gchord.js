@@ -29,9 +29,7 @@ gchord.ChordDiagram = function() {
     // Angle (polar coords) at which to start and end the drawing of target arcs
     this.targetArcDisplay = {start: Math.PI*1.15, end: Math.PI*1.85};
     this.targetArcLength = {min: this.targetTxtSize/(2*(this.targetArcDisplay.end - this.targetArcDisplay.start)*this.graphRadius),
-                            max: (this.targetArcDisplay.end - this.targetArcDisplay.start)};
-    this.targetArcLength = {min: 0.5,
-                            max: 1};   
+                            max: (this.targetArcDisplay.end - this.targetArcDisplay.start)};  
     this.sourceTxtSize = 10;   
     this.sourceTxtColor = '#000000';
     // Angle (polar coords) at which to start and end the drawing of sources
@@ -46,7 +44,7 @@ gchord.ChordDiagram = function() {
     this.targetList = new Object();
     this.sourceList = new Object();
     
-    // Needed for normalization
+    // For normalization
     this.numTargets = 0;
     this.numSources = 0;
     this.positionHint      = {min: Number.MAX_VALUE, max: Number.MIN_VALUE};
@@ -54,22 +52,7 @@ gchord.ChordDiagram = function() {
     this.connectionWeights = {min: Number.MAX_VALUE, max: Number.MIN_VALUE, total: 0};
     this.usePositionHint = true;
     this.useAutoRotate   = true;
-    
-    /*                  
-    // Alternative RGB Color palette
-    this.colorPalette = [ [ 63,   0, 255], // Indigo     (B)
-                          [  0, 255,  63], // Malachite  (G)
-                          [255,  63,   0], // Vermillion (R)
-                          [  0,  63, 255], // Sapphire   (B)
-                          [ 63, 255,   0], // Harlequin  (G)
-                          [255,   0,  63], // Crimson    (R)
-                          [  0, 191, 255], // Cerulean   (B)
-                          [191, 255,   0], // Lime Green (G)
-                          [255,   0, 191], // Fuchsia    (R)
-                          [191,   0, 255], // Mulberry   (B)
-                          [  0, 255, 191], // Turquoise  (G)
-                          [255, 191,   0]  // Amber      (R)
-                        ];*/ 
+       
     this.colorPalette = [ [  0,  72, 140],
                           [ 30, 108,  11],
                           [240, 180,   0],
@@ -79,8 +62,7 @@ gchord.ChordDiagram = function() {
                           [ 51,  38,   0],
                           [79,   49,  79],
                           [ 46, 139,  87],
-                          [ 79,  79,  49]
-                        ];                       
+                          [ 79,  79,  49] ];                 
     this.colorID = 0;
 }
 
@@ -638,9 +620,88 @@ gchord.ChordDiagram.prototype.fromGoogleDataTable = function(data, options) {
 }
 
 
+/**
+ * Reads data from a google visualization DataTable
+ *
+ * @param {object} Array
+ * @param {object} a set of options (optional) 
+ */
 gchord.ChordDiagram.prototype.fromArray = function(data, options) {
-    // TODO: Ditch googles DataTable completely, convert them to an array and use this method instead
-    //       as we don't use any of the built-in functions anyway
+    this.setOptions(options);
+    
+    var targetID;
+    var targetName;
+    var connectionWeight;
+    var sourceID;
+    var sourceName;
+    var posHint = ''; // may not be present  
+    // Get data from spreadsheet
+    for (var row = 0; row < data.length; row++) {
+        targetID = data[row][this.dataColumns.targetID];
+        
+        if (typeof targetID != 'string') {
+            targetID = 'inv';
+        } else {
+            // Remove whitespaces. A lot of data sets seem to
+            // have random whitespaces in their labels.
+            targetName = targetID.trim();
+            targetID   = this.escapeCSS(targetID.trim());
+        }        
+        connectionWeight = parseInt(data[row][this.dataColumns.weight]);        
+        if (!isFinite(connectionWeight)) {
+            // this connection won't be displayed at all
+            connectionWeight = 0; 
+        }       
+        sourceID = data[row][this.dataColumns.sourceID];
+        if (typeof sourceID != 'string') {
+            sourceID = 'inv';
+        } else {
+            sourceName = sourceID.trim();
+            sourceID   = this.escapeCSS(sourceID.trim());
+        }         
+        if (this.usePositionHint) {
+            posHint = this.parsePositionHint(data[row][this.dataColumns.positionHint]);
+        } else {
+            posHint = 0;
+        }
+          
+        // Create a new target if necessary
+        if (!this.targetList.hasOwnProperty(targetID)){      
+            this.targetList[targetID] = new Object();
+            this.targetList[targetID].name = targetName;
+            this.targetList[targetID].id = targetID;
+            this.targetList[targetID].color = this.getColor();
+            this.targetList[targetID].connections = new Array();
+            this.targetList[targetID].totalWeight = 0;
+            this.numTargets++;           
+        }
+        // Add target data
+        this.positionHint.min = Math.min(this.positionHint.min, posHint);
+        this.positionHint.max = Math.max(this.positionHint.max, posHint);
+        this.connectionWeights.min = Math.min(this.connectionWeights.min, connectionWeight);
+        this.connectionWeights.max = Math.max(this.connectionWeights.max, connectionWeight);
+        this.targetList[targetID].connections.push({sourceID: sourceID, 
+                                                    weight: connectionWeight, 
+                                                    positionHint: posHint});
+        this.targetList[targetID].totalWeight += connectionWeight; 
+        
+        // Create a new source if necessary
+        if (!this.sourceList.hasOwnProperty(sourceID)) {
+            this.sourceList[sourceID] = new Object();
+            this.sourceList[sourceID].name = sourceName;
+            this.sourceList[sourceID].id = sourceID;
+            this.sourceList[sourceID].svgPos = -1; // invalid Pos
+            this.numSources++;
+        }
+        // Add source data        
+        this.connectionWeights.total += connectionWeight;        
+    }
+    
+    for(var target in this.targetList) {
+        this.targetWeights.min = Math.min(this.targetWeights.min, this.targetList[target].totalWeight);
+        this.targetWeights.max = Math.max(this.targetWeights.max, this.targetList[target].totalWeight);
+    }    
+    
 }
 
 
@@ -750,7 +811,6 @@ gchord.ChordDiagram.prototype.draw = function(containerElement) {
             var normalizedPos;
             for (var i=0; i < this.targetList[target].connections.length; i++) {
                 connection = this.targetList[target].connections[i];
-                
                 normalizedWeight = (connection.weight-this.connectionWeights.min) / (this.connectionWeights.max-this.connectionWeights.min);
                 bezier2Width = this.connectWidth.min + normalizedWeight * (this.connectWidth.max-this.connectWidth.min);
                 normalizedPos = (connection.positionHint-this.positionHint.min) / (this.positionHint.max-this.positionHint.min); 
@@ -767,6 +827,5 @@ gchord.ChordDiagram.prototype.draw = function(containerElement) {
             // TODO: Use some other kind of sorting to determine position, if no date is available
             //      (or draw graph differently)
         }
-   
     }
 }

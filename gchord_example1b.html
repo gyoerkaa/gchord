@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <title>Gchord Example 1</title>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript" src="gchord.js"></script>
+        <script type="text/javascript">
+            google.load("visualization", "1");
+
+            // Set callback to run when API is loaded
+            google.setOnLoadCallback(drawVisualization);
+
+            // Called when the Chart API is loaded.
+            function drawVisualization() {
+                // Create and populate a data table.
+                               
+                // Construct a table ourselves
+                // # target id # weight # source id # sorting weight (optional, number or string(=date)) # 
+                var data = new Array();
+                data.push(['Soup Station',        500, 'Onion',     '2011-01-21']);
+                data.push(['Pizza Palace',        250, 'Tomato',    '2011-02-21']);
+                data.push(['Chocolate Compound', 3000, 'Chocolate', '2011-03-21']);
+                data.push(['Pizza Palace',        250, 'Onion',     '2011-01-21']);
+                data.push(['Soup Station',        500, 'Tomato',    '2011-03-21']);
+                data.push(['Pizza Palace',       1000, 'Cheese',    '2011-04-21']);
+                data.push(['Pizza Palace',        250, 'Pepperoni', '2011-04-21']);
+                data.push(['Pizza Palace',        250, 'Tuna',      '2011-04-21']);
+                data.push(['Pizza Palace',        250, 'Salami',    '2011-04-21']);
+                data.push(['Chocolate Compound',  500, 'Almond',    '2011-09-21']);
+                data.push(['Chocolate Compound',  500, 'Hazelnut',  '2011-09-21']);
+                data.push(['Chocolate Compound',  200, 'Chili',     '2011-09-21']);
+                data.push(['Taco Tent',           250, 'Pepperoni', '2011-04-21']);
+                data.push(['Pizza Palace',        100, 'Chili',     '2011-10-21']);
+                data.push(['Soup Station',        500, 'Chili',     '2011-11-01']);
+                data.push(['Taco Tent',          1000, 'Tomato',    '2011-11-19']);
+                data.push(['Taco Tent',           500, 'Chili',     '2011-11-19']);
+                data.push(['Chocolate Compound', 1000, 'Chocolate', '2011-12-01']);
+                data.push(['Soup Station',        500, 'Tomato',    '2011-11-14']);
+                data.push(['Pizza Palace',       1000, 'Cheese',    '2011-12-21']);
+                data.push(['Taco Tent',           500, 'Chili',     '2011-01-16']);
+                
+                // Options for the graph
+                var options = {canvasSize: 580, 
+                               graphRadius: 200};
+                
+                // Create the graph & specify where to draw it
+                var chart = new gchord.ChordDiagram();
+                // Read data
+                chart.fromArray(data, options);
+                // Actual draw call
+                chart.draw(document.getElementById('chart1b_div'));
+            }
+            
+            // Function to save the generated svg without a server.
+            // May not work with all browsers and the generated xml
+            // will be ugly/unformatted
+            function show_svg_code()
+            {
+                // Get the svg element
+                var chart_div = document.getElementById('chart1b_div');
+                var svgDOM    = chart_div.getElementsByTagName('svg')[0];
+                var svg_xml = (new XMLSerializer).serializeToString(svgDOM);
+                
+                // unescape(encodeURIComponent()) seems silly, but is neccessary to
+                // encode utf8 chars with btoa without errors.
+                window.open('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent((svg_xml)))));
+            }
+            
+        </script>
+    </head>
+    <body>
+        <p>
+            Graph generated from a local array.
+        </p>
+        <div id="chart1b_div">
+        </div>       
+        <div id="controls_div">
+            <button id="control_show_svg" value="" onclick="show_svg_code()">
+                Show SVG only
+            </button>
+        </div>        
+    </body>   
+</html>
