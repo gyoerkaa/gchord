@@ -27,7 +27,7 @@ time, mark, audio, video {
 
 body {
   padding:10px 50px 0 0;
-  font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+  /*font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;*/
 	font-size: 14px;
 	color: #232323;
 	background-color: #FBFAF7;
@@ -35,6 +35,11 @@ body {
 	line-height: 1.8em;
 	-webkit-font-smoothing: antialiased;
 
+}
+
+span.codedirection {
+    unicode-bidi: bidi-override;
+    direction: rtl;
 }
 
 h1, h2, h3, h4, h5, h6 {
