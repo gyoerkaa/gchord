@@ -2,6 +2,8 @@
 <html lang="en-US">
     <head>
         <title>Gchord Example 1</title>
+        <link rel="stylesheet" href="../stylesheets/styles.css">
+        <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
         <script type="text/javascript" src="gchord.js"></script>
         <script type="text/javascript">
             // Called when the Chart API is loaded.
@@ -63,14 +65,14 @@
         </script>
     </head>
     <body onload="drawVisualization()">
-        <p>
-            Graph generated from a local array.
-        </p>
         <div id="chart1b_div">
         </div>       
-        <div id="controls_div">
+        <div id="controls_div" style="margin: 20px">
             <button id="control_show_svg" value="" onclick="show_svg_code()">
-                Show SVG only
+                Open SVG
+            </button>
+            <button id="control_show_svg" value="" onclick="window.open('../index.html','_self')">
+                Back
             </button>
         </div>        
     </body>   

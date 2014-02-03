@@ -2,6 +2,8 @@
 <html lang="en-US">
     <head>
         <title>Gchord Example 2</title>
+        <link rel="stylesheet" href="../stylesheets/styles.css">
+        <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script type="text/javascript" src="gchord.js"></script>
         <script type="text/javascript">
@@ -18,7 +20,6 @@
                 // see https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&output=html
                 var query = new google.visualization.Query('https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&usp=drive_web#gid=0');
                 query.send(handleQueryResponse);
-   
             }
             
             function handleQueryResponse(response) {
@@ -85,14 +86,17 @@
     </head>
     <body>
         <p>
-            Graph generated from a google dataTable object from a <a href="https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&output=html">google spreadsheet</a> (long loading, the table is large)
+            Graph generated from a google dataTable object from this <a href="https://docs.google.com/spreadsheet/ccc?key=0Aj7HUoKktLr_dHh5TkdRazhTZU9VamdjV0pBby1NSGc&output=html" target="_blank">google spreadsheet</a> (long loading, the table is large)
         </p>
         <div id="chart2_div">
         </div>       
-        <div id="controls_div">
+        <div id="controls_div" style="margin: 20px">
             <button id="control_show_svg" value="" onclick="show_svg_code()">
-                Show SVG only
+                Open SVG
             </button>
-        </div>        
+            <button id="control_show_svg" value="" onclick="window.open('../index.html','_self')">
+                Back
+            </button>
+        </div>     
     </body>   
 </html>

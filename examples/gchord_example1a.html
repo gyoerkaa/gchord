@@ -3,6 +3,7 @@
     <head>
         <title>Gchord Example 1</title>
         <link rel="stylesheet" href="../stylesheets/styles.css">
+        <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script type="text/javascript" src="gchord.js"></script>
         <script type="text/javascript">
@@ -79,10 +80,13 @@
         </p>
         <div id="chart1a_div">
         </div>       
-        <div id="controls_div">
+        <div id="controls_div" style="margin: 20px">
             <button id="control_show_svg" value="" onclick="show_svg_code()">
-                Show SVG only
+                Open SVG
             </button>
-        </div>        
+            <button id="control_show_svg" value="" onclick="window.open('../index.html','_self')">
+                Back
+            </button>
+        </div>       
     </body>   
 </html>
