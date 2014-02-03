@@ -2,14 +2,8 @@
 <html lang="en-US">
     <head>
         <title>Gchord Example 1</title>
-        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script type="text/javascript" src="gchord.js"></script>
         <script type="text/javascript">
-            google.load("visualization", "1");
-
-            // Set callback to run when API is loaded
-            google.setOnLoadCallback(drawVisualization);
-
             // Called when the Chart API is loaded.
             function drawVisualization() {
                 // Create and populate a data table.
@@ -68,7 +62,7 @@
             
         </script>
     </head>
-    <body>
+    <body onload="drawVisualization()">
         <p>
             Graph generated from a local array.
         </p>
