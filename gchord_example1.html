@@ -48,11 +48,11 @@
                                graphRadius: 200};
                                
                 // Create the graph & specify where to draw it
-                var chart = new gchord.ChordDiagram(document.getElementById('chart1_div'));
+                var chart = new gchord.ChordDiagram();
                 // Read data
                 chart.fromGoogleDataTable(data, options);
                 //actual draw call.
-                chart.draw();
+                chart.draw(document.getElementById('chart1_div'));
             }
                         
             // Function to save the generated svg without a server.
@@ -62,10 +62,12 @@
             {
                 // Get the svg element
                 var chart_div = document.getElementById('chart1_div');
-                var svgDOM    = chart_div.getElementsByTagName('svg')[0];                               
-                
+                var svgDOM    = chart_div.getElementsByTagName('svg')[0];
                 var svg_xml = (new XMLSerializer).serializeToString(svgDOM);
-                window.open('data:image/svg+xml;base64,'+btoa(svg_xml));
+                
+                // unescape(encodeURIComponent()) seems silly, but is neccessary to
+                // encode utf8 chars with btoa without errors.
+                window.open('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent((svg_xml)))));
             }
             
         </script>
@@ -80,7 +82,8 @@
             <button id="control_show_svg" value="" onclick="show_svg_code()">
                 Display SVG
             </button>
-            (Uses non-standard methods, only Firefox & Chrome, may not work for very complex graphs)
+            <br>
+            (Use Rightclick => Save Page As to save the graph to local filesystem)
         </div>        
     </body>   
 </html>

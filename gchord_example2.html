@@ -58,9 +58,9 @@
                                dataColumns: dataCols,       // optional (uses columns 1-4 by default)   
                                colorPalette: myPalette};    // optional (uses built-in palette by default)     
                                
-                var chart = new gchord.ChordDiagram(document.getElementById('chart2_div'));
+                var chart = new gchord.ChordDiagram();
                 chart.fromGoogleDataTable(data, options);
-                chart.draw();
+                chart.draw(document.getElementById('chart2_div'));
 
             }
             
@@ -74,9 +74,11 @@
                 // Get the svg element
                 var chart_div = document.getElementById('chart2_div');
                 var svgDOM    = chart_div.getElementsByTagName('svg')[0];                               
-                
                 var svg_xml = (new XMLSerializer).serializeToString(svgDOM);
-                window.open('data:image/svg+xml;base64,'+btoa(svg_xml));
+                
+                // unescape(encodeURIComponent()) seems silly, but is neccessary to
+                // encode utf8 chars with btoa without errors.                
+                window.open('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent((svg_xml)))));
             }
             
         </script>
@@ -91,7 +93,8 @@
             <button id="control_show_svg" value="" onclick="show_svg_code()">
                 Display SVG
             </button>
-            (Uses non-standard methods, only Firefox & Chrome, may not work for very complex graphs)
+            <br>
+            (Use Rightclick => Save Page As to save the graph to local filesystem)
         </div>        
     </body>   
 </html>
